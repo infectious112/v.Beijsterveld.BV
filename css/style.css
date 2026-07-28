@@ -117,3 +117,34 @@ body {
 .article-edit label{display:grid;gap:6px;font-size:13px;font-weight:750}
 #confirmImport:disabled{opacity:.45}
 @media(max-width:390px){.button-grid{grid-template-columns:1fr}.section-title{display:grid}.section-title>span{text-align:left}}
+
+
+/* alpha.8 uitgebreide catalogus */
+.settings-hint{margin:0}
+.supplier-summary{margin-top:18px}
+.compact-heading{align-items:end;margin-bottom:8px}
+.compact-heading h3{margin:0}.compact-heading span{font-size:12px;color:var(--muted)}
+.supplier-groups{display:grid;gap:8px}
+.supplier-group{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.supplier-group>div{display:grid;gap:3px}.supplier-group span{font-size:11px;color:var(--muted)}
+.supplier-mail{width:auto;min-width:82px}
+.article-filters{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:9px 0}
+.article-filters select{width:100%;min-height:43px;border:1px solid #dcd2c8;border-radius:12px;background:#fffdfa;padding:8px}
+.favorite-filter{grid-column:1/-1;display:flex;align-items:center;gap:8px;font-size:13px}
+.favorite-filter input{width:20px;min-height:20px}
+#newArticle{margin-bottom:10px}
+.article-row{grid-template-columns:auto 1fr auto auto}
+.favorite-button,.article-more{border:0;background:#fff;padding:0 10px;font-size:21px;color:#997b43}
+.favorite-button.active{color:#d69a12}
+.article-more{border-left:1px solid var(--line);font-size:19px;color:#3f3b38}
+.article-row.inactive{opacity:.62}
+.article-main em{font-style:normal;font-size:10px;background:#ece7e1;border-radius:999px;padding:3px 6px;margin-left:5px}
+.article-checks{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.article-checks label{display:flex!important;align-items:center;gap:8px;background:#f7f2ed;border-radius:12px;padding:10px;font-weight:650!important}
+.article-checks input{width:20px!important;min-height:20px!important}
+@media(max-width:430px){
+  .article-filters,.article-checks{grid-template-columns:1fr}
+  .article-row{grid-template-columns:auto 1fr auto}
+  .article-delete{grid-column:3;grid-row:1}
+  .article-more{grid-column:3;grid-row:2;border-top:1px solid var(--line)}
+}

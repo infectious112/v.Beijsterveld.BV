@@ -98,7 +98,18 @@
         <h2>Bekende artikelen</h2>
         <button class="icon-button" data-close-articles aria-label="Sluiten">×</button>
       </header>
-      <input id="articleSearch" type="search" placeholder="Zoek op naam, nummer of barcode">
+      <input id="articleSearch" type="search" placeholder="Zoek op naam, nummer, merk of barcode">
+      <div class="article-filters">
+        <select id="articleCategoryFilter"><option value="">Alle categorieën</option></select>
+        <select id="articleSupplierFilter"><option value="">Alle leveranciers</option></select>
+        <select id="articleStatusFilter">
+          <option value="all">Actief en inactief</option>
+          <option value="active">Alleen actief</option>
+          <option value="inactive">Alleen inactief</option>
+        </select>
+        <label class="favorite-filter"><input id="articleFavoriteFilter" type="checkbox"> Alleen favorieten</label>
+      </div>
+      <button class="primary" id="newArticle" type="button">Nieuw artikel toevoegen</button>
       <div id="articleList"></div>
       <section id="articleEdit" class="article-edit" hidden>
         <div class="about-divider"></div>
@@ -107,7 +118,22 @@
           <label>Barcode<input id="articleBarcode" required></label>
           <label>Artikelnummer<input id="articleNumber"></label>
           <label>Artikelnaam<input id="articleName" required></label>
-          <label>Eenheid<select id="articleUnit"></select></label>
+          <div class="grid-two">
+            <label>Eenheid<select id="articleUnit"></select></label>
+            <label>Categorie<input id="articleCategory" list="categorySuggestions"></label>
+          </div>
+          <div class="grid-two">
+            <label>Leverancier<input id="articleSupplier" list="supplierSuggestions"></label>
+            <label>Merk<input id="articleBrand"></label>
+          </div>
+          <label>Opslaglocatie<input id="articleLocation" placeholder="Bijvoorbeeld A01-B02-C03"></label>
+          <label>Opmerking<textarea id="articleRemarks"></textarea></label>
+          <div class="article-checks">
+            <label><input id="articleActive" type="checkbox" checked> Actief artikel</label>
+            <label><input id="articleFavorite" type="checkbox"> Favoriet</label>
+          </div>
+          <datalist id="categorySuggestions"></datalist>
+          <datalist id="supplierSuggestions"></datalist>
           <div class="button-grid">
             <button class="secondary" id="cancelArticleEdit" type="button">Annuleren</button>
             <button class="primary" type="submit">Opslaan</button>

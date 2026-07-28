@@ -1,4 +1,4 @@
-const CACHE_NAME="vb-inventory-0.1.0-alpha.7-20260728-VB07";
+const CACHE_NAME="vb-inventory-0.1.0-alpha.8-20260728-VB08";
 const LOCAL=[
   "./","./index.html","./manifest.json","./css/style.css",
   "./js/config.js","./js/storage.js","./js/scanner.js","./js/updates.js","./js/app.js",

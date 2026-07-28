@@ -34,7 +34,12 @@
         articleNumber:item.articleNumber||item.artikelnummer||"",
         name:item.name||item.naam||"",
         unit:item.unit||item.eenheid||"stuk",
-        supplier:item.supplier||"",
+        category:item.category||item.categorie||"",
+        supplier:item.supplier||item.leverancier||"",
+        brand:item.brand||item.merk||"",
+        location:item.location||item.opslaglocatie||"",
+        remarks:item.remarks||item.opmerking||item.opmerkingen||"",
+        active:item.active===undefined ? true : !["nee","false","0",false,0].includes(item.active),
         favorite:Boolean(item.favorite)
       };
     });
@@ -71,10 +76,14 @@
   }
 
   function catalogCsv(){
-    const rows=[["barcode","artikelnummer","naam","eenheid"]];
+    const rows=[["barcode","artikelnummer","naam","eenheid","categorie","leverancier","merk","opslaglocatie","opmerking","actief"]];
     Object.values(catalog)
       .sort((a,b)=>a.name.localeCompare(b.name,"nl"))
-      .forEach(item=>rows.push([item.barcode,item.articleNumber,item.name,item.unit]));
+      .forEach(item=>rows.push([
+        item.barcode,item.articleNumber,item.name,item.unit,item.category||"",
+        item.supplier||"",item.brand||"",item.location||"",item.remarks||"",
+        item.active===false?"nee":"ja"
+      ]));
     return rows.map(row=>row.map(csvEscape).join(";")).join("\n");
   }
 
@@ -90,7 +99,7 @@
       <article class="card item">
         <div>
           <h3>${esc(item.name)}</h3>
-          <div class="meta">${esc(item.barcode)}${item.note?` · ${esc(item.note)}`:""}</div>
+          <div class="meta">${esc(item.barcode)}${item.supplier?` · ${esc(item.supplier)}`:""}${item.note?` · ${esc(item.note)}`:""}</div>
         </div>
         ${editable?`
           <div class="item-actions">
@@ -107,6 +116,27 @@
       <span><strong>${label}</strong><small>${description}</small></span>
       <input id="${id}" type="checkbox" ${checked?"checked":""}>
     </label>`;
+  }
+
+
+  function supplierGroupsHtml(items){
+    if(!items.length)return "";
+    const groups={};
+    items.forEach(item=>{
+      const supplier=item.supplier?.trim()||"Geen leverancier";
+      (groups[supplier] ||= []).push(item);
+    });
+    const names=Object.keys(groups).sort((a,b)=>a.localeCompare(b,"nl"));
+    return `<section class="supplier-summary">
+      <div class="heading compact-heading"><h3>Per leverancier</h3><span>${names.length} leverancier${names.length===1?"":"s"}</span></div>
+      <div class="supplier-groups">${names.map((name,index)=>{
+        const quantity=groups[name].reduce((sum,item)=>sum+Number(item.quantity||0),0);
+        return `<article class="card supplier-group">
+          <div><strong>${esc(name)}</strong><span>${groups[name].length} regels · ${quantity} eenheden</span></div>
+          <button class="secondary supplier-mail" data-email-supplier="${esc(name)}">E-mail</button>
+        </article>`;
+      }).join("")}</div>
+    </section>`;
   }
 
   function renderSettings(){
@@ -143,6 +173,7 @@
           <button class="secondary" id="exportCatalogCsv">Export CSV</button>
         </div>
         <button class="secondary" id="manageArticles">Bekende artikelen beheren</button>
+        <p class="small settings-hint">Met categorie, leverancier, merk, opslaglocatie, favorieten en actief/inactief.</p>
       </section>
 
       <section class="card settings-section">
@@ -204,6 +235,7 @@
         <div class="screen-content">
           <div class="heading"><h2>Huidige lijst</h2><button class="link-button danger" id="clearActive">Leegmaken</button></div>
           ${listHtml(active,true)}
+          ${supplierGroupsHtml(active)}
           <button class="primary" id="finishSession" style="margin-top:14px">Scanronde afronden</button>
           <button class="secondary" id="emailActive" style="margin-top:9px">Openen in e-mail</button>
         </div>${footer()}
@@ -233,6 +265,7 @@
     form.reset();
     const order=index===null?null:active[index];
     const known=catalog[code];
+    if(index===null && known?.active===false){showToast("Dit artikel staat op inactief.");return;}
 
     document.getElementById("barcode").value=order?.barcode||code;
     document.getElementById("productName").value=order?.name||known?.name||"";
@@ -261,9 +294,14 @@
   function addKnownDirectly(code){
     const known=catalog[code];
     if(!known) return false;
+    if(known.active===false){showToast("Dit artikel staat op inactief.");return true;}
     const existing=active.find(item=>item.barcode===code&&item.unit===known.unit&&!item.note);
     if(existing) existing.quantity+=1;
-    else active.push({barcode:code,name:known.name,quantity:1,unit:known.unit,note:""});
+    else active.push({
+      barcode:code,name:known.name,quantity:1,unit:known.unit,note:"",
+      articleNumber:known.articleNumber||"",category:known.category||"",
+      supplier:known.supplier||"",brand:known.brand||"",location:known.location||""
+    });
     if(settings.vibrate&&navigator.vibrate)navigator.vibrate(35);
     persist();render();showToast(`${known.name} toegevoegd.`);
     if(settings.reopenScanner)setTimeout(startScanner,350);
@@ -294,11 +332,11 @@
     return `BESTELLIJST\n\nDatum: ${date.toLocaleDateString("nl-NL")}\nTijd: ${date.toLocaleTimeString("nl-NL",{hour:"2-digit",minute:"2-digit"})}\n\n${lines.join("\n\n")}\n\nVerzonden vanuit Van Beijsterveld B.V.`;
   }
 
-  function openEmail(items,date=new Date()){
+  function openEmail(items,date=new Date(),supplier=""){
     if(!items.length)return showToast("De lijst is leeg.");
     const recipients=settings.emails.filter(Boolean).join(",");
     const cc=settings.cc?`&cc=${encodeURIComponent(settings.cc)}`:"";
-    const subject=encodeURIComponent(`${settings.emailSubject} ${date.toLocaleDateString("nl-NL")}`.trim());
+    const subject=encodeURIComponent(`${settings.emailSubject}${supplier?` – ${supplier}`:""} ${date.toLocaleDateString("nl-NL")}`.trim());
     const body=encodeURIComponent(mailText(items,date));
     location.href=`mailto:${recipients}?subject=${subject}${cc}&body=${body}`;
   }
@@ -332,7 +370,13 @@
       barcode:["barcode","ean","ean13","code"],
       articleNumber:["artikelnummer","articleNumber","artikelnr","sku"].map(v=>v.toLowerCase()),
       name:["naam","artikelnaam","name","omschrijving"],
-      unit:["eenheid","unit"]
+      unit:["eenheid","unit"],
+      category:["categorie","category"],
+      supplier:["leverancier","supplier"],
+      brand:["merk","brand"],
+      location:["opslaglocatie","location","locatie"],
+      remarks:["opmerking","opmerkingen","remarks","remark"],
+      active:["actief","active"]
     };
     const index={};
     Object.entries(aliases).forEach(([key,names])=>index[key]=headers.findIndex(header=>names.includes(header)));
@@ -345,7 +389,13 @@
         barcode:String(values[index.barcode]||"").trim(),
         articleNumber:index.articleNumber>=0?String(values[index.articleNumber]||"").trim():"",
         name:String(values[index.name]||"").trim(),
-        unit:String(values[index.unit]||"").trim().toLowerCase()
+        unit:String(values[index.unit]||"").trim().toLowerCase(),
+        category:index.category>=0?String(values[index.category]||"").trim():"",
+        supplier:index.supplier>=0?String(values[index.supplier]||"").trim():"",
+        brand:index.brand>=0?String(values[index.brand]||"").trim():"",
+        location:index.location>=0?String(values[index.location]||"").trim():"",
+        remarks:index.remarks>=0?String(values[index.remarks]||"").trim():"",
+        active:index.active>=0?!["nee","false","0"].includes(String(values[index.active]||"ja").trim().toLowerCase()):true
       };
     });
   }
@@ -362,7 +412,12 @@
     valid.forEach(item=>{
       const existing=catalog[item.barcode];
       if(!existing)added++;
-      else if(existing.name!==item.name||existing.unit!==item.unit||existing.articleNumber!==item.articleNumber)updated++;
+      else if(
+        existing.name!==item.name||existing.unit!==item.unit||existing.articleNumber!==item.articleNumber||
+        (existing.category||"")!==item.category||(existing.supplier||"")!==item.supplier||
+        (existing.brand||"")!==item.brand||(existing.location||"")!==item.location||
+        (existing.remarks||"")!==item.remarks||existing.active!==item.active
+      )updated++;
       else unchanged++;
     });
     return {valid,errors,added,updated,unchanged};
@@ -382,41 +437,90 @@
     importDialog.showModal();
   }
 
+  function catalogOptions(field){
+    return [...new Set(Object.values(catalog).map(item=>String(item[field]||"").trim()).filter(Boolean))]
+      .sort((a,b)=>a.localeCompare(b,"nl"));
+  }
+
   function articleListHtml(){
     const query=articleSearch.trim().toLowerCase();
+    const category=document.getElementById("articleCategoryFilter")?.value||"";
+    const supplier=document.getElementById("articleSupplierFilter")?.value||"";
+    const statusFilter=document.getElementById("articleStatusFilter")?.value||"all";
+    const favoriteOnly=document.getElementById("articleFavoriteFilter")?.checked||false;
     const items=Object.values(catalog)
-      .filter(item=>!query||[item.barcode,item.articleNumber,item.name,item.unit].some(value=>String(value).toLowerCase().includes(query)))
-      .sort((a,b)=>a.name.localeCompare(b.name,"nl"));
+      .filter(item=>!query||[
+        item.barcode,item.articleNumber,item.name,item.unit,item.category,item.supplier,item.brand,item.location
+      ].some(value=>String(value||"").toLowerCase().includes(query)))
+      .filter(item=>!category||item.category===category)
+      .filter(item=>!supplier||item.supplier===supplier)
+      .filter(item=>statusFilter==="all"||(statusFilter==="active"?item.active!==false:item.active===false))
+      .filter(item=>!favoriteOnly||item.favorite)
+      .sort((a,b)=>(Number(Boolean(b.favorite))-Number(Boolean(a.favorite)))||a.name.localeCompare(b.name,"nl"));
     if(!items.length)return`<div class="empty">Geen artikelen gevonden.</div>`;
     return `<div class="article-list">${items.map(item=>`
-      <article class="article-row">
+      <article class="article-row ${item.active===false?"inactive":""}">
+        <button class="favorite-button ${item.favorite?"active":""}" data-favorite-article="${esc(item.barcode)}" aria-label="Favoriet">${item.favorite?"★":"☆"}</button>
         <button class="article-main" data-open-article="${esc(item.barcode)}">
-          <strong>${esc(item.name)}</strong>
-          <span>${esc(item.articleNumber||"Geen artikelnummer")} · ${esc(item.unit)}</span>
-          <small>${esc(item.barcode)}</small>
+          <strong>${esc(item.name)}${item.active===false?' <em>Inactief</em>':""}</strong>
+          <span>${esc(item.articleNumber||"Geen artikelnummer")} · ${esc(item.unit)}${item.category?` · ${esc(item.category)}`:""}</span>
+          <small>${esc(item.supplier||"Geen leverancier")}${item.brand?` · ${esc(item.brand)}`:""} · ${esc(item.barcode)}</small>
         </button>
+        <button class="article-more" data-duplicate-article="${esc(item.barcode)}" aria-label="Dupliceren">⧉</button>
         <button class="article-delete" data-delete-article="${esc(item.barcode)}" aria-label="Artikel verwijderen">×</button>
       </article>`).join("")}</div>`;
   }
 
+  function refreshArticleManager(){
+    const categoryFilter=document.getElementById("articleCategoryFilter");
+    const supplierFilter=document.getElementById("articleSupplierFilter");
+    if(categoryFilter){
+      const current=categoryFilter.value;
+      categoryFilter.innerHTML=`<option value="">Alle categorieën</option>${catalogOptions("category").map(value=>`<option>${esc(value)}</option>`).join("")}`;
+      categoryFilter.value=current;
+    }
+    if(supplierFilter){
+      const current=supplierFilter.value;
+      supplierFilter.innerHTML=`<option value="">Alle leveranciers</option>${catalogOptions("supplier").map(value=>`<option>${esc(value)}</option>`).join("")}`;
+      supplierFilter.value=current;
+    }
+    const categorySuggestions=document.getElementById("categorySuggestions");
+    const supplierSuggestions=document.getElementById("supplierSuggestions");
+    if(categorySuggestions)categorySuggestions.innerHTML=catalogOptions("category").map(value=>`<option value="${esc(value)}"></option>`).join("");
+    if(supplierSuggestions)supplierSuggestions.innerHTML=catalogOptions("supplier").map(value=>`<option value="${esc(value)}"></option>`).join("");
+    document.getElementById("articleList").innerHTML=articleListHtml();
+  }
+
   function openArticleManager(){
     document.getElementById("articleSearch").value=articleSearch;
-    document.getElementById("articleList").innerHTML=articleListHtml();
+    document.getElementById("articleEdit").hidden=true;
+    refreshArticleManager();
     articleDialog.showModal();
+  }
+
+  function fillArticleForm(item={}, title="Nieuw artikel"){
+    editingArticleBarcode=item.barcode||"";
+    document.getElementById("articleEditTitle").textContent=title;
+    document.getElementById("articleBarcode").value=item.barcode||"";
+    document.getElementById("articleNumber").value=item.articleNumber||"";
+    document.getElementById("articleName").value=item.name||"";
+    document.getElementById("articleUnit").innerHTML=units.map(unit=>`<option>${unit}</option>`).join("");
+    if(item.unit&&!units.includes(item.unit))document.getElementById("articleUnit").innerHTML+=`<option>${esc(item.unit)}</option>`;
+    document.getElementById("articleUnit").value=item.unit||settings.defaultUnit||"stuk";
+    document.getElementById("articleCategory").value=item.category||"";
+    document.getElementById("articleSupplier").value=item.supplier||"";
+    document.getElementById("articleBrand").value=item.brand||"";
+    document.getElementById("articleLocation").value=item.location||"";
+    document.getElementById("articleRemarks").value=item.remarks||"";
+    document.getElementById("articleActive").checked=item.active!==false;
+    document.getElementById("articleFavorite").checked=Boolean(item.favorite);
+    document.getElementById("articleEdit").hidden=false;
+    document.getElementById("articleEdit").scrollIntoView({behavior:"smooth",block:"start"});
   }
 
   function openArticleEdit(barcode){
     const item=catalog[barcode];
-    if(!item)return;
-    editingArticleBarcode=barcode;
-    document.getElementById("articleEditTitle").textContent="Artikel bewerken";
-    document.getElementById("articleBarcode").value=item.barcode;
-    document.getElementById("articleNumber").value=item.articleNumber||"";
-    document.getElementById("articleName").value=item.name||"";
-    document.getElementById("articleUnit").innerHTML=units.map(unit=>`<option>${unit}</option>`).join("");
-    if(!units.includes(item.unit))document.getElementById("articleUnit").innerHTML+=`<option>${esc(item.unit)}</option>`;
-    document.getElementById("articleUnit").value=item.unit;
-    document.getElementById("articleEdit").hidden=false;
+    if(item)fillArticleForm(item,"Artikel bewerken");
   }
 
   function collectSettings(){
@@ -447,6 +551,11 @@
     if(e.target.dataset.edit!==undefined){const index=Number(e.target.dataset.edit);openEntry(active[index].barcode,index);}
     if(e.target.id==="clearActive"&&active.length&&confirm("Huidige lijst leegmaken?")){active=[];save();}
     if(e.target.id==="emailActive")openEmail(active);
+    if(e.target.dataset.emailSupplier!==undefined){
+      const supplier=e.target.dataset.emailSupplier;
+      const items=active.filter(item=>(item.supplier?.trim()||"Geen leverancier")===supplier);
+      openEmail(items,new Date(),supplier);
+    }
 
     if(e.target.id==="finishSession"){
       if(!active.length)return showToast("De lijst is leeg.");
@@ -470,7 +579,7 @@
     if(e.target.id==="saveSettings"){collectSettings();applyHistoryRetention();save();showToast("Instellingen opgeslagen.");}
 
     if(e.target.id==="downloadTemplate"){
-      download("voorbeeld-artikelen.csv","barcode;artikelnummer;naam;eenheid\n8712345678901;100245;Tie-wrap zwart 300 mm;zak\n8712345678918;100246;Tape 50 mm;rol\n","text/csv;charset=utf-8");
+      download("voorbeeld-artikelen.csv","barcode;artikelnummer;naam;eenheid;categorie;leverancier;merk;opslaglocatie;opmerking;actief\n8712345678901;100245;Tie-wrap zwart 300 mm;zak;Bevestigingsmateriaal;Würth;Würth;A01-B02;UV-bestendig;ja\n8712345678918;100246;Tape 50 mm;rol;Tape en lijm;Technische Unie;3M;B03-C01;;ja\n","text/csv;charset=utf-8");
     }
     if(e.target.id==="exportCatalogCsv"){
       download(`artikelen-${new Date().toISOString().slice(0,10)}.csv`,catalogCsv(),"text/csv;charset=utf-8");
@@ -513,7 +622,12 @@
       name:document.getElementById("productName").value.trim(),
       quantity:Math.max(1,Number(document.getElementById("quantity").value)||1),
       unit:document.getElementById("unit").value,
-      note:document.getElementById("note").value.trim()
+      note:document.getElementById("note").value.trim(),
+      articleNumber:catalog[document.getElementById("barcode").value.trim()]?.articleNumber||"",
+      category:catalog[document.getElementById("barcode").value.trim()]?.category||"",
+      supplier:catalog[document.getElementById("barcode").value.trim()]?.supplier||"",
+      brand:catalog[document.getElementById("barcode").value.trim()]?.brand||"",
+      location:catalog[document.getElementById("barcode").value.trim()]?.location||""
     };
     catalog[item.barcode]={
       id:catalog[item.barcode]?.id||`local-${item.barcode}`,
@@ -538,7 +652,14 @@
     try{
       const text=await file.text();
       const rows=file.name.toLowerCase().endsWith(".json")
-        ?JSON.parse(text).map((item,index)=>({row:index+1,barcode:String(item.barcode||""),articleNumber:String(item.articleNumber||item.artikelnummer||""),name:String(item.name||item.naam||""),unit:String(item.unit||item.eenheid||"")}))
+        ?JSON.parse(text).map((item,index)=>({
+          row:index+1,barcode:String(item.barcode||""),articleNumber:String(item.articleNumber||item.artikelnummer||""),
+          name:String(item.name||item.naam||""),unit:String(item.unit||item.eenheid||""),
+          category:String(item.category||item.categorie||""),supplier:String(item.supplier||item.leverancier||""),
+          brand:String(item.brand||item.merk||""),location:String(item.location||item.opslaglocatie||""),
+          remarks:String(item.remarks||item.opmerking||item.opmerkingen||""),
+          active:item.active===undefined?true:!["nee","false","0",false,0].includes(item.active)
+        }))
         :parseCsv(text);
       showImportPreview(prepareImport(rows));
     }catch(error){showToast(error.message||"Importeren is niet gelukt.");}
@@ -549,7 +670,9 @@
       catalog[item.barcode]={
         id:catalog[item.barcode]?.id||`import-${item.barcode}`,
         barcode:item.barcode,articleNumber:item.articleNumber,name:item.name,unit:item.unit,
-        supplier:catalog[item.barcode]?.supplier||"",favorite:Boolean(catalog[item.barcode]?.favorite)
+        category:item.category||"",supplier:item.supplier||"",brand:item.brand||"",
+        location:item.location||"",remarks:item.remarks||"",active:item.active!==false,
+        favorite:Boolean(catalog[item.barcode]?.favorite)
       };
     });
     persist();importDialog.close();render();
@@ -568,18 +691,32 @@
 
   document.getElementById("articleSearch").oninput=e=>{
     articleSearch=e.target.value;
-    document.getElementById("articleList").innerHTML=articleListHtml();
+    refreshArticleManager();
   };
+  ["articleCategoryFilter","articleSupplierFilter","articleStatusFilter","articleFavoriteFilter"].forEach(id=>{
+    document.getElementById(id).onchange=refreshArticleManager;
+  });
+  document.getElementById("newArticle").onclick=()=>fillArticleForm({active:true},"Nieuw artikel");
 
   document.getElementById("articleList").onclick=e=>{
     const open=e.target.closest("[data-open-article]");
     const remove=e.target.closest("[data-delete-article]");
+    const duplicate=e.target.closest("[data-duplicate-article]");
+    const favorite=e.target.closest("[data-favorite-article]");
     if(open)openArticleEdit(open.dataset.openArticle);
+    if(favorite){
+      const barcode=favorite.dataset.favoriteArticle;
+      catalog[barcode].favorite=!catalog[barcode].favorite;
+      persist();refreshArticleManager();render();
+    }
+    if(duplicate){
+      const source=catalog[duplicate.dataset.duplicateArticle];
+      if(source)fillArticleForm({...source,barcode:"",articleNumber:"",name:`${source.name} kopie`},"Artikel dupliceren");
+    }
     if(remove&&confirm("Dit bekende artikel verwijderen?")){
       delete catalog[remove.dataset.deleteArticle];persist();
       document.getElementById("articleEdit").hidden=true;
-      document.getElementById("articleList").innerHTML=articleListHtml();
-      render();showToast("Artikel verwijderd.");
+      refreshArticleManager();render();showToast("Artikel verwijderd.");
     }
   };
 
@@ -587,18 +724,31 @@
     e.preventDefault();
     const oldBarcode=editingArticleBarcode;
     const barcode=document.getElementById("articleBarcode").value.trim();
+    if(!barcode)return showToast("Vul een barcode in.");
+    if(barcode!==oldBarcode&&catalog[barcode])return showToast("Deze barcode bestaat al.");
     const updated={
       id:catalog[oldBarcode]?.id||`local-${barcode}`,barcode,
       articleNumber:document.getElementById("articleNumber").value.trim(),
       name:document.getElementById("articleName").value.trim(),
       unit:document.getElementById("articleUnit").value,
-      supplier:catalog[oldBarcode]?.supplier||"",favorite:Boolean(catalog[oldBarcode]?.favorite)
+      category:document.getElementById("articleCategory").value.trim(),
+      supplier:document.getElementById("articleSupplier").value.trim(),
+      brand:document.getElementById("articleBrand").value.trim(),
+      location:document.getElementById("articleLocation").value.trim(),
+      remarks:document.getElementById("articleRemarks").value.trim(),
+      active:document.getElementById("articleActive").checked,
+      favorite:document.getElementById("articleFavorite").checked
     };
-    if(barcode!==oldBarcode)delete catalog[oldBarcode];
+    if(oldBarcode&&barcode!==oldBarcode)delete catalog[oldBarcode];
     catalog[barcode]=updated;
-    active=active.map(item=>item.barcode===oldBarcode?{...item,barcode,name:updated.name,unit:updated.unit}:item);
+    if(oldBarcode){
+      active=active.map(item=>item.barcode===oldBarcode?{
+        ...item,barcode,name:updated.name,unit:updated.unit,articleNumber:updated.articleNumber,
+        category:updated.category,supplier:updated.supplier,brand:updated.brand,location:updated.location
+      }:item);
+    }
     persist();document.getElementById("articleEdit").hidden=true;
-    document.getElementById("articleList").innerHTML=articleListHtml();render();
+    refreshArticleManager();render();
     showToast("Artikel opgeslagen.");
   };
 
