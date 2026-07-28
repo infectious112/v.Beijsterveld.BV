@@ -80,6 +80,46 @@
     </section>
   </dialog>
 
+
+  <dialog id="importDialog">
+    <section class="sheet">
+      <header class="sheet-header">
+        <h2>Artikelimport controleren</h2>
+        <button class="icon-button" data-close-import aria-label="Sluiten">×</button>
+      </header>
+      <div id="importSummary"></div>
+      <button class="primary" id="confirmImport">Importeren</button>
+    </section>
+  </dialog>
+
+  <dialog id="articleDialog">
+    <section class="sheet article-sheet">
+      <header class="sheet-header">
+        <h2>Bekende artikelen</h2>
+        <button class="icon-button" data-close-articles aria-label="Sluiten">×</button>
+      </header>
+      <input id="articleSearch" type="search" placeholder="Zoek op naam, nummer of barcode">
+      <div id="articleList"></div>
+      <section id="articleEdit" class="article-edit" hidden>
+        <div class="about-divider"></div>
+        <h3 id="articleEditTitle">Artikel bewerken</h3>
+        <form id="articleEditForm">
+          <label>Barcode<input id="articleBarcode" required></label>
+          <label>Artikelnummer<input id="articleNumber"></label>
+          <label>Artikelnaam<input id="articleName" required></label>
+          <label>Eenheid<select id="articleUnit"></select></label>
+          <div class="button-grid">
+            <button class="secondary" id="cancelArticleEdit" type="button">Annuleren</button>
+            <button class="primary" type="submit">Opslaan</button>
+          </div>
+        </form>
+      </section>
+    </section>
+  </dialog>
+
+  <input id="importFile" type="file" accept=".csv,.json,text/csv,application/json" hidden>
+  <input id="restoreFile" type="file" accept=".json,application/json" hidden>
+
   <div class="toast" id="toast"></div>
 
   <script src="./js/config.js"></script>
