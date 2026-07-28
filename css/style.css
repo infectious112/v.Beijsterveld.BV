@@ -57,3 +57,27 @@ dialog::backdrop{background:rgba(20,15,10,.48);backdrop-filter:blur(4px)}.sheet{
 .known-product{background:#f7fbf6;color:#3f6942}
 .entry-name[readonly]{background:#f5f2ee;color:#4d4d4d}
 .mail-preview{white-space:pre-wrap;font-family:inherit;font-size:13px;line-height:1.55}
+
+
+/* alpha.6 iOS zoomfix */
+input,
+select,
+textarea {
+  font-size: 16px !important;
+}
+
+dialog input,
+dialog select,
+dialog textarea {
+  font-size: 16px !important;
+}
+
+html,
+body {
+  text-size-adjust: 100%;
+  -webkit-text-size-adjust: 100%;
+}
+
+.sheet {
+  scroll-margin-top: 0;
+}

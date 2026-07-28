@@ -1,7 +1,7 @@
 window.APP_CONFIG = {
   name: "Van Beijsterveld B.V.",
-  version: "0.1.0-alpha.5",
-  build: "20260728-VB05",
+  version: "0.1.0-alpha.6",
+  build: "20260728-VB06",
   developer: "Martijn P.",
   storagePrefix: "vbInventory",
   scannerSources: [

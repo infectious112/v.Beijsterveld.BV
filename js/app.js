@@ -158,7 +158,13 @@
         :"Vul één keer een artikelnaam en standaardeenheid in.";
 
     entryDialog.showModal();
-    setTimeout(()=>known?document.getElementById("quantity").focus():nameInput.focus(),100);
+    requestAnimationFrame(() => {
+      const activeElement = document.activeElement;
+      if (activeElement && ["INPUT", "SELECT", "TEXTAREA"].includes(activeElement.tagName)) {
+        activeElement.blur();
+      }
+      entryDialog.scrollTop = 0;
+    });
   }
 
   async function startScanner(){
