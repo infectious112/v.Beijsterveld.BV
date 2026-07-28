@@ -1,0 +1,19 @@
+{
+  "name": "Van Beijsterveld B.V.",
+  "short_name": "Van Beijsterveld",
+  "description": "Barcode scannen en bestellijsten samenstellen.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#fff7ef",
+  "theme_color": "#fff7ef",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "./icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

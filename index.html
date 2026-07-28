@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#fff7ef">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Van Beijsterveld B.V.">
+  <link rel="manifest" href="./manifest.json">
+  <link rel="icon" href="./icons/icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./css/style.css">
+  <title>Van Beijsterveld B.V.</title>
+</head>
+<body>
+  <main id="app"></main>
+
+  <dialog id="scannerDialog">
+    <section class="sheet">
+      <header class="sheet-header">
+        <h2>Barcode scannen</h2>
+        <button class="icon-button" data-close-scanner aria-label="Sluiten">×</button>
+      </header>
+      <div class="camera">
+        <video id="scannerVideo" playsinline muted></video>
+        <div class="scan-frame"></div>
+        <div class="scan-line"></div>
+      </div>
+      <p id="scannerStatus" class="status">Camera starten.</p>
+      <button class="link-button" id="manualBarcode">Barcode handmatig invoeren</button>
+    </section>
+  </dialog>
+
+  <dialog id="entryDialog">
+    <form class="sheet" id="entryForm">
+      <header class="sheet-header">
+        <h2 id="entryTitle">Artikel toevoegen</h2>
+        <button type="button" class="icon-button" data-close-entry aria-label="Sluiten">×</button>
+      </header>
+      <p class="notice" id="entryNotice"></p>
+      <label>Barcode<input id="barcode" required inputmode="numeric"></label>
+      <label>Artikelnaam<input id="productName" required placeholder="Tijdelijke artikelnaam"></label>
+      <div class="grid-two">
+        <label>Aantal<input id="quantity" required type="number" min="1" value="1"></label>
+        <label>Eenheid
+          <select id="unit">
+            <option>stuk</option><option>doos</option><option>pak</option>
+            <option>rol</option><option>zak</option><option>krat</option>
+            <option>fles</option><option>bus</option><option>set</option>
+          </select>
+        </label>
+      </div>
+      <label>Opmerking<textarea id="note" placeholder="Bijvoorbeeld bijna leeg"></textarea></label>
+      <button class="primary" type="submit">Toevoegen aan lijst</button>
+    </form>
+  </dialog>
+
+  <dialog id="sessionDialog">
+    <section class="sheet">
+      <header class="sheet-header">
+        <h2 id="sessionTitle">Scanronde</h2>
+        <button class="icon-button" data-close-session aria-label="Sluiten">×</button>
+      </header>
+      <div id="sessionDetail"></div>
+    </section>
+  </dialog>
+
+  <dialog id="updateDialog">
+    <section class="sheet">
+      <h2>Nieuwe versie beschikbaar</h2>
+      <p>De update staat klaar. Jouw gegevens blijven behouden.</p>
+      <div class="grid-two">
+        <button class="secondary" id="updateLater">Later</button>
+        <button class="primary" id="updateNow">Nu bijwerken</button>
+      </div>
+    </section>
+  </dialog>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="./js/config.js"></script>
+  <script src="./js/storage.js"></script>
+  <script src="./js/scanner.js"></script>
+  <script src="./js/updates.js"></script>
+  <script src="./js/app.js"></script>
+</body>
+</html>
