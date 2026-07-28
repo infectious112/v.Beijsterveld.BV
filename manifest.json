@@ -1,0 +1,12 @@
+{
+  "name": "Scan & Bestel",
+  "short_name": "Scan & Bestel",
+  "description": "Scan artikelen en verzamel ze op een bestellijst.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#fff6eb",
+  "theme_color": "#fff6eb",
+  "orientation": "portrait",
+  "icons": [{"src":"icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]
+}
