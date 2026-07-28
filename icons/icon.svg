@@ -1,7 +1,24 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-<defs><linearGradient id="g" x1="60" y1="50" x2="450" y2="460" gradientUnits="userSpaceOnUse"><stop stop-color="#e84d8a"/><stop offset=".55" stop-color="#ff8300"/><stop offset="1" stop-color="#ffb72f"/></linearGradient></defs>
+<defs>
+  <linearGradient id="g" x1="72" y1="66" x2="438" y2="445" gradientUnits="userSpaceOnUse">
+    <stop stop-color="#e84d8a"/><stop offset=".54" stop-color="#ff8300"/><stop offset="1" stop-color="#ffb72f"/>
+  </linearGradient>
+</defs>
 <rect width="512" height="512" rx="112" fill="#fff7ef"/>
-<path d="M91 183v-66c0-15 12-27 27-27h66M328 90h66c15 0 27 12 27 27v66M421 329v66c0 15-12 27-27 27h-66M184 422h-66c-15 0-27-12-27-27v-66" fill="none" stroke="url(#g)" stroke-width="27" stroke-linecap="round"/>
-<path d="M181 126h105c66 0 106 34 106 87 0 35-18 60-50 74 42 12 66 42 66 83 0 68-50 106-133 106h-94V126zm91 139c31 0 48-13 48-38 0-24-17-37-48-37h-25v75h25zm7 146c37 0 56-15 56-43 0-27-19-42-56-42h-32v85h32z" fill="#202020"/>
-<g fill="#202020"><rect x="337" y="158" width="9" height="52" rx="4"/><rect x="352" y="151" width="5" height="66" rx="2"/><rect x="363" y="161" width="11" height="47" rx="4"/><rect x="380" y="154" width="5" height="61" rx="2"/></g>
+<path d="M92 184v-65c0-15 12-27 27-27h65M328 92h65c15 0 27 12 27 27v65M420 328v65c0 15-12 27-27 27h-65M184 420h-65c-15 0-27-12-27-27v-65"
+ fill="none" stroke="url(#g)" stroke-width="27" stroke-linecap="round"/>
+<g fill="#202020">
+  <path d="M179 126h103c70 0 111 34 111 89 0 36-20 62-54 75 45 12 70 43 70 86 0 66-48 103-129 103H179V126zm94 139c33 0 50-13 50-38 0-25-17-38-50-38h-25v76h25zm7 143c38 0 57-15 57-43 0-27-19-42-57-42h-32v85h32z"/>
+  <rect x="198" y="395" width="8" height="63" rx="2"/>
+  <rect x="211" y="383" width="5" height="75" rx="2"/>
+  <rect x="221" y="391" width="11" height="67" rx="2"/>
+  <rect x="237" y="379" width="6" height="79" rx="2"/>
+  <rect x="248" y="388" width="10" height="70" rx="2"/>
+  <rect x="263" y="374" width="5" height="84" rx="2"/>
+  <rect x="273" y="386" width="12" height="72" rx="2"/>
+  <rect x="290" y="378" width="6" height="80" rx="2"/>
+  <rect x="301" y="391" width="9" height="67" rx="2"/>
+  <rect x="315" y="382" width="5" height="76" rx="2"/>
+  <rect x="325" y="394" width="11" height="64" rx="2"/>
+</g>
 </svg>

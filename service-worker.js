@@ -1,5 +1,5 @@
-const CACHE_NAME="vb-inventory-0.1.0-alpha.1-20260728-VB01";
-const LOCAL=["./","./index.html","./manifest.json","./css/style.css","./js/config.js","./js/storage.js","./js/scanner.js","./js/updates.js","./js/app.js","./icons/icon.svg"];
+const CACHE_NAME="vb-inventory-0.1.0-alpha.2-20260728-VB02";
+const LOCAL=["./","./index.html","./manifest.json","./css/style.css","./js/config.js","./js/storage.js","./js/scanner.js","./js/updates.js","./js/app.js","./icons/icon.svg","./icons/icon-192.png","./icons/icon-512.png","./icons/apple-touch-icon.png"];
 self.addEventListener("install",e=>e.waitUntil(caches.open(CACHE_NAME).then(c=>c.addAll(LOCAL))));
 self.addEventListener("activate",e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE_NAME).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
 self.addEventListener("message",e=>{if(e.data?.type==="SKIP_WAITING")self.skipWaiting()});
